@@ -1,1 +1,10 @@
 node_modules
+
+##### IntelliJ files ######
+*.iml
+# Also IntelliJ. Use this format to be able un-ignore code style settings below
+.idea/*
+# Do not ingore code style settings
+!.idea/codeStyleSettings.xml
+# Do not ignore shared run-debug configurations
+!.idea/runConfigurations
