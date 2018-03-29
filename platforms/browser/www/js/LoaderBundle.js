@@ -12640,7 +12640,6 @@ new vue_1.default({
         var _this = this;
         this.socketHandler = new SocketHandler_1.SocketHandler(function (newList) {
             console.warn("Update function");
-            console.warn(newList);
             console.warn(JSON.parse(newList));
             _this.list = JSON.parse(newList);
         });
@@ -12650,11 +12649,11 @@ new vue_1.default({
     methods: {
         saveTodo: function (todo) {
             console.log("Saved a todo" + JSON.stringify(todo));
-            this.list.push(todo);
             this.socketHandler.saveTodo(todo);
         },
         deleteTodo: function (todo) {
             console.log("deleted a todo" + JSON.stringify(todo));
+            this.socketHandler.deleteTodo(todo);
         },
         updateTodoDone: function (todo) {
             console.log("updated a todo" + JSON.stringify(todo));
@@ -12742,6 +12741,11 @@ var SocketHandler = (function () {
     };
     SocketHandler.prototype.saveTodo = function (todo) {
         console.log("save todo " + todo);
+        this.doSend(JSON.stringify({ action: "SAVE", item: todo }));
+    };
+    SocketHandler.prototype.deleteTodo = function (todo) {
+        console.log("delete todo " + todo);
+        this.doSend(JSON.stringify({ action: "DELETE", item: todo }));
     };
     return SocketHandler;
 }());

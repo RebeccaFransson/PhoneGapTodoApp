@@ -41,7 +41,6 @@ export class SocketHandler {
         console.log("RESPONSE: " + evt.data );
         // Update the TodoList
         this.update(evt.data);
-        //this.socket.close();
     }
 
     onError(evt:any) {
@@ -52,17 +51,14 @@ export class SocketHandler {
         console.log("SENT: " + message);
         this.socket.send(message);
     }
-
-
-    /*
-    public connect() {
-        console.log(this.socket)
-        this.socket.CONNECTING
-    }
-    public disconnect() {
-        this.socket.CLOSED
-    }*/
     public saveTodo(todo: TodoObject) {
         console.log("save todo " + todo)
+        // TODO: Make action to enum
+        this.doSend(JSON.stringify({action: "SAVE", item: todo}))
+    }
+
+    public deleteTodo(todo: TodoObject) {
+        console.log("delete todo " + todo)
+        this.doSend(JSON.stringify({action: "DELETE", item: todo}))
     }
 }
