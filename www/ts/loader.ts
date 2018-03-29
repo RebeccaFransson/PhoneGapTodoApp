@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Todo from "../vue/todoComponent.vue";
 import TodoObject from "./objects/TodoObject";
-import {ServerCaller} from "./utils/ServerCaller";
+import {SocketHandler} from "./utils/SocketHandler";
 
 new Vue({
     el: "#main",
@@ -17,28 +17,28 @@ new Vue({
     },
     data: () => {
         return {
-            serverCaller: new ServerCaller((message: any) => {
-                console.warn("Update function")
-                console.warn(message)
-            }),
-            list: [
-                new TodoObject("Eat"),
-                new TodoObject("Program"),
-                new TodoObject("Sleep")
-            ]
+            socketHandler: new SocketHandler(() => {}),
+            list: [ new TodoObject("Eat")]
         }
     },
+    computed: {
+        
+    },
     created() {
-        //this.serverCaller.connect();
+        this.socketHandler = new SocketHandler((newList: any) => {
+            console.warn("Update function")
+            console.warn(newList)
+            console.warn(JSON.parse(newList))
+            this.list = JSON.parse(newList)
+        })
     },
     destroyed() {
-        //this.serverCaller.disconnect();
     },
     methods: {
         saveTodo(todo: TodoObject) {
             console.log("Saved a todo" + JSON.stringify(todo))
             this.list.push(todo)
-            //this.serverCaller.saveTodo(todo);
+            this.socketHandler.saveTodo(todo);
         },
         deleteTodo(todo: TodoObject) {
             console.log("deleted a todo" + JSON.stringify(todo))

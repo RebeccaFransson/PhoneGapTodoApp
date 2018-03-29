@@ -12622,7 +12622,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var vue_1 = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
 var todoComponent_vue_1 = __webpack_require__(/*! ../vue/todoComponent.vue */ "./www/vue/todoComponent.vue");
 var TodoObject_1 = __webpack_require__(/*! ./objects/TodoObject */ "./www/ts/objects/TodoObject.ts");
-var ServerCaller_1 = __webpack_require__(/*! ./utils/ServerCaller */ "./www/ts/utils/ServerCaller.ts");
+var SocketHandler_1 = __webpack_require__(/*! ./utils/SocketHandler */ "./www/ts/utils/SocketHandler.ts");
 new vue_1.default({
     el: "#main",
     template: "\n    <div>\n        <todo :list=\"list\"\n              :save-todo=\"saveTodo\" \n              :delete-todo=\"deleteTodo\" \n              :update-todo-done=\"updateTodoDone\"></todo>\n    </div>",
@@ -12631,18 +12631,19 @@ new vue_1.default({
     },
     data: function () {
         return {
-            serverCaller: new ServerCaller_1.ServerCaller(function (message) {
-                console.warn("Update function");
-                console.warn(message);
-            }),
-            list: [
-                new TodoObject_1.default("Eat"),
-                new TodoObject_1.default("Program"),
-                new TodoObject_1.default("Sleep")
-            ]
+            socketHandler: new SocketHandler_1.SocketHandler(function () { }),
+            list: [new TodoObject_1.default("Eat")]
         };
     },
+    computed: {},
     created: function () {
+        var _this = this;
+        this.socketHandler = new SocketHandler_1.SocketHandler(function (newList) {
+            console.warn("Update function");
+            console.warn(newList);
+            console.warn(JSON.parse(newList));
+            _this.list = JSON.parse(newList);
+        });
     },
     destroyed: function () {
     },
@@ -12650,6 +12651,7 @@ new vue_1.default({
         saveTodo: function (todo) {
             console.log("Saved a todo" + JSON.stringify(todo));
             this.list.push(todo);
+            this.socketHandler.saveTodo(todo);
         },
         deleteTodo: function (todo) {
             console.log("deleted a todo" + JSON.stringify(todo));
@@ -12688,56 +12690,62 @@ exports.default = TodoObject;
 
 /***/ }),
 
-/***/ "./www/ts/utils/ServerCaller.ts":
-/*!**************************************!*\
-  !*** ./www/ts/utils/ServerCaller.ts ***!
-  \**************************************/
+/***/ "./www/ts/utils/SocketHandler.ts":
+/*!***************************************!*\
+  !*** ./www/ts/utils/SocketHandler.ts ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ServerCaller = (function () {
-    function ServerCaller(update) {
+var SocketHandler = (function () {
+    function SocketHandler(update) {
         var _this = this;
         this.socket = WEBSOCKET_TODO;
-        this.socket.onmessage = update;
+        this.update = update;
         this.socket.onopen = function (evt) {
+            console.log("onopen");
             _this.onOpen(evt);
         };
         this.socket.onclose = function (evt) {
+            console.log("onclose");
             _this.onClose(evt);
         };
         this.socket.onmessage = function (evt) {
+            console.log("onmessage");
             _this.onMessage(evt);
         };
         this.socket.onerror = function (evt) {
             _this.onError(evt);
         };
     }
-    ServerCaller.prototype.onOpen = function (evt) {
+    SocketHandler.prototype.onOpen = function (evt) {
         console.log("CONNECTED");
-        this.doSend("WebSocket rocks");
         console.log(evt);
     };
-    ServerCaller.prototype.onClose = function (evt) {
+    SocketHandler.prototype.onClose = function (evt) {
         console.log("DISCONNECTED");
         console.log(evt);
     };
-    ServerCaller.prototype.onMessage = function (evt) {
+    SocketHandler.prototype.onMessage = function (evt) {
         console.log("RESPONSE: " + evt.data);
+        this.update(evt.data);
     };
-    ServerCaller.prototype.onError = function (evt) {
+    SocketHandler.prototype.onError = function (evt) {
         console.log("ERROR: " + evt.data);
     };
-    ServerCaller.prototype.doSend = function (message) {
+    SocketHandler.prototype.doSend = function (message) {
         console.log("SENT: " + message);
         this.socket.send(message);
     };
-    return ServerCaller;
+    SocketHandler.prototype.saveTodo = function (todo) {
+        console.log("save todo " + todo);
+    };
+    return SocketHandler;
 }());
-exports.ServerCaller = ServerCaller;
+exports.SocketHandler = SocketHandler;
 
 
 /***/ }),
